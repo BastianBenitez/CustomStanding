@@ -22,21 +22,24 @@ function initIRacing() {
   // --- CONFIGURACIÓN DE VARIABLES ---
   const varsDinamicas = [
     "SessionNum", // Para saber en qué sesión estamos cambiando
+    "CarIdxPosition",
+    "CarIdxClassPosition",
     "CarIdxF2Time",
     "CarIdxEstTime",
     "CarIdxTireCompound",
     "CarIdxOnPitRoad",
     "PlayerCarInPitStall",
     "PlayerTireCompound",
+    "SessionInfo",
   ];
 
-  const varsEstaticas = ["DriverInfo", "SessionInfo"];
+  const varsEstaticas = ["DriverInfo"];
 
   // IMPORTANTE: Pasamos los parámetros DIRECTO al constructor
   // new IRacing(dinamicas, estaticas, fps)
   const iracing = new IRacing(varsDinamicas, varsEstaticas, 10); // 10 FPS para fluidez en pits y gaps
 
-  iracing.onConnect = () => console.log("✅ Conectado a Kapps");
+  iracing.onConnect = () => console.log("Conectado a Kapps");
 
   iracing.onUpdate = function () {
     // En ir.coffee, 'this' dentro de onUpdate es la instancia de IRacing
@@ -46,13 +49,10 @@ function initIRacing() {
 }
 
 function processUpdate(data) {
-  let tableNeedsUpdate = false;
-
   if (data.SessionNum !== undefined) {
     if (window.currentSessionNum !== data.SessionNum) {
       window.currentSessionNum = data.SessionNum;
       totalLapsCache = -1; // Resetear caché al cambiar de sesión
-      tableNeedsUpdate = true;
     }
   }
 
@@ -73,16 +73,15 @@ function processUpdate(data) {
 
         // Extraer datos oficiales del Standing (Resultados de la sesión)
         if (currentSession.ResultsPositions) {
-          
           let sumOfLaps = 0;
 
           currentSession.ResultsPositions.forEach((res) => {
             const carIdx = res.CarIdx;
-            
+
             // Sumar vueltas completadas oficiales por toda la grilla.
             // Si la suma global asciende, alguien cruzó la meta.
             sumOfLaps += res.LapsComplete || 0;
-            
+
             // Si el piloto no existe en telemetría lo inicializamos
             if (carIdx >= 0 && !telemetryData.has(carIdx)) {
               telemetryData.set(carIdx, {
@@ -94,20 +93,19 @@ function processUpdate(data) {
                 lastLapHistory: [],
                 onPitRoad: false,
                 bestLapRaw: -1,
-                lapsCompleted: 0
+                lapsCompleted: 0,
               });
-              tableNeedsUpdate = true;
             }
-            
+
             if (carIdx >= 0) {
               const state = telemetryData.get(carIdx);
-              
+
               const didCrossFinishLine = res.LapsComplete > state.lapsCompleted;
 
-              // Actualizamos posiciones oficiales desde SessionInfo
+              // Actualizamos posiciones oficiales desde SessionInfo como respaldo
+              // Pero confiaremos más en CarIdxClassPosition dinámico.
               state.position = res.Position;
-              state.classPosition = res.ClassPosition;
-              
+
               if (res.LapsComplete) state.lapsCompleted = res.LapsComplete;
 
               // Extraer la Mejor Vuelta Oficial
@@ -128,11 +126,11 @@ function processUpdate(data) {
             }
           });
 
-          // Solo detonamos actualización real del DOM si hubieron nuevas vueltas procesadas. 
-          // O si es la primera vez (totalLapsCache == -1)
           if (sumOfLaps > totalLapsCache || totalLapsCache === -1) {
+            console.log(
+              `[SessionInfo Update] Vueltas totales detectadas cruzando meta: ${sumOfLaps} - Timestamp: ${new Date().toISOString()}`
+            );
             totalLapsCache = sumOfLaps;
-            tableNeedsUpdate = true;
           }
         }
       }
@@ -145,7 +143,6 @@ function processUpdate(data) {
       console.log("=== DriverInfo  ===", data.DriverInfo);
 
       window.hasLoggedFullDriverInfo = true;
-      tableNeedsUpdate = true;
     }
 
     playerCarIdx = data.DriverInfo.DriverCarIdx;
@@ -176,15 +173,28 @@ function processUpdate(data) {
           lastLapHistory: [],
           onPitRoad: false,
           bestLapRaw: -1,
-          lapsCompleted: 0
+          lapsCompleted: 0,
         });
-        tableNeedsUpdate = true;
       }
     });
   }
 
+  // 1.5 PROCESAR POSICIONES EN TIEMPO REAL
+  // SessionInfo NO actualiza las posiciones constantemente en todas las sesiones,
+  // necesitamos esto de la telemetría dinámica.
+  if (data.CarIdxClassPosition) {
+    data.CarIdxClassPosition.forEach((pos, i) => {
+      if (telemetryData.has(i)) telemetryData.get(i).classPosition = pos;
+    });
+  }
+
+  if (data.CarIdxPosition) {
+    data.CarIdxPosition.forEach((pos, i) => {
+      if (telemetryData.has(i)) telemetryData.get(i).position = pos;
+    });
+  }
+
   // 2. PROCESAR TELEMETRÍA (Deltas, Pits, Llantas)
-  // Nota: Ya no extraemos CarIdxClassPosition de aquí porque ahora usamos SessionInfo
   const mapping = {
     CarIdxF2Time: "gap",
     CarIdxEstTime: "interval",
@@ -199,14 +209,12 @@ function processUpdate(data) {
           const state = telemetryData.get(i);
           const field = mapping[key];
 
-          // Lógica de cronómetro de Pits (esta info si queremos actualizarla fluido)
+          // Lógica de cronómetro de Pits
           if (field === "onPitRoad") {
             if (val && !state.onPitRoad) {
               pitTimers.set(i, { startTime: Date.now() });
-              tableNeedsUpdate = true;
             } else if (!val && state.onPitRoad) {
               pitTimers.delete(i);
-              tableNeedsUpdate = true;
             }
             state[field] = val;
           } else if (field === "tire") {
@@ -215,15 +223,9 @@ function processUpdate(data) {
               nTire = typeof val === "object" ? val.compound : val;
             }
             if (state.tire !== nTire) {
-               state.tire = nTire;
-               tableNeedsUpdate = true;
+              state.tire = nTire;
             }
           } else {
-             // Si quieres ver distancias o GAPS (CarIdxF2Time) moviendose SUAVEMENTE (flujo de 10fps),
-             // Descomenta la siguiente línea para forzar actualización constante solo de lapsos.
-             
-             // tableNeedsUpdate = true; 
-             
             state[field] = val;
           }
         }
@@ -231,16 +233,9 @@ function processUpdate(data) {
     }
   }
 
-  // El cronómetro de PitLane es algo que SÍ necesita refrescarse constantemente
-  if (pitTimers.size > 0) {
-      tableNeedsUpdate = true; 
-  }
-
-  // Solo redibujar la tabla si hubieron cambios en las posiciones (cruce de meta), un auto entró/salió de pits,
-  // cambio neumático, cambio sesión o ingresó un jugador nuevo.
-  if (tableNeedsUpdate) {
-    renderTable();
-  }
+  // Redibujado forzado incondicional a 10 Hz para reflejar de inmediato
+  // cualquier fluctuación en Posición, Vueltas, o Gaps.
+  renderTable();
 }
 
 function renderTable() {
@@ -253,14 +248,20 @@ function renderTable() {
   const driversList = [];
   driverData.forEach((info, carIdx) => {
     const state = telemetryData.get(carIdx);
-    // Validamos que exista estado y que tenga una posición asignada por SessionInfo
-    if (state && typeof state.position === "number" && state.position > 0) {
+    // Validamos que exista estado
+    if (state) {
       driversList.push({ info, state, carIdx });
     }
   });
 
-  // Ordenar estricta y únicamente por Position oficial de SessionInfo
-  driversList.sort((a, b) => a.state.position - b.state.position);
+  // RESTAURADO EL SORT DINÁMICO
+  // Ordenar primero por ClassPosition entregada por telemetría.
+  // Es la que se actualiza más rápido. Si es 0 (no calculada aún), mandamos al fondo.
+  driversList.sort((a, b) => {
+    const posA = a.state.classPosition || a.state.position || 999;
+    const posB = b.state.classPosition || b.state.position || 999;
+    return posA - posB;
+  });
 
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
