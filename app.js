@@ -66,27 +66,35 @@ function processUpdate(data) {
       if (currentSession) {
         window.sessionType = currentSession.SessionType;
 
-        // Extraer la Mejor Vuelta Oficial (FastestTime) de todos los autos
+        // Extraer datos oficiales del Standing (Resultados de la sesión)
         if (currentSession.ResultsPositions) {
           currentSession.ResultsPositions.forEach((res) => {
             const carIdx = res.CarIdx;
-            // Time o FastestTime
-            const bestTime = res.FastestTime > 0 ? res.FastestTime : res.Time;
-
-            if (carIdx >= 0 && bestTime > 0) {
-              if (!telemetryData.has(carIdx)) {
-                telemetryData.set(carIdx, {
-                  classPosition: 0,
-                  gap: 0,
-                  interval: 0,
-                  lastLapRaw: -1,
-                  lastLapHistory: [],
-                  onPitRoad: false,
-                  bestLapRaw: -1,
-                });
-              }
+            
+            // Si el piloto no existe en telemetría lo inicializamos
+            if (carIdx >= 0 && !telemetryData.has(carIdx)) {
+              telemetryData.set(carIdx, {
+                position: 0,
+                classPosition: 0,
+                gap: 0,
+                interval: 0,
+                lastLapRaw: -1,
+                lastLapHistory: [],
+                onPitRoad: false,
+                bestLapRaw: -1,
+              });
+            }
+            
+            if (carIdx >= 0) {
               const state = telemetryData.get(carIdx);
-              state.bestLapRaw = bestTime;
+              
+              // Actualizamos posiciones oficiales desde SessionInfo
+              state.position = res.Position;
+              state.classPosition = res.ClassPosition;
+
+              // Extraer la Mejor Vuelta Oficial
+              const bestTime = res.FastestTime > 0 ? res.FastestTime : res.Time;
+              if (bestTime > 0) state.bestLapRaw = bestTime;
 
               // Extraer la Última Vuelta Oficial (LastTime)
               const lastTime = res.LastTime > 0 ? res.LastTime : -1;
@@ -108,8 +116,8 @@ function processUpdate(data) {
 
   if (data.DriverInfo && data.DriverInfo.Drivers) {
     if (!window.hasLoggedFullDriverInfo) {
-      console.log("=== SessionInfo COMPLETO ===", data.PlayerTireCompound);
-      console.log("=== otro COMPLETO ===", data.DriverInfo);
+      console.log("=== SessionInfo ===", data.SessionInfo);
+      console.log("=== DriverInfo  ===", data.DriverInfo);
 
       window.hasLoggedFullDriverInfo = true;
     }
@@ -134,6 +142,7 @@ function processUpdate(data) {
       // Inicializar telemetría para este piloto si no existe
       if (!telemetryData.has(carIdx)) {
         telemetryData.set(carIdx, {
+          position: 0,
           classPosition: 0,
           gap: 0,
           interval: 0,
@@ -146,19 +155,13 @@ function processUpdate(data) {
     });
   }
 
-  // 2. PROCESAR TELEMETRÍA (Solo si tenemos pilotos registrados)
-  if (data.CarIdxClassPosition) {
-    data.CarIdxClassPosition.forEach((pos, i) => {
-      if (telemetryData.has(i)) telemetryData.get(i).classPosition = pos;
-    });
-  }
-
+  // 2. PROCESAR TELEMETRÍA (Deltas, Pits, Llantas)
+  // Nota: Ya no extraemos CarIdxClassPosition de aquí porque ahora usamos SessionInfo
   const mapping = {
     CarIdxF2Time: "gap",
     CarIdxEstTime: "interval",
     CarIdxOnPitRoad: "onPitRoad",
     CarIdxTireCompound: "tire",
-    CarIdxPosition: "position",
   };
 
   for (let key in mapping) {
@@ -203,14 +206,14 @@ function renderTable() {
   const driversList = [];
   driverData.forEach((info, carIdx) => {
     const state = telemetryData.get(carIdx);
-    // Validamos que exista estado y que tenga una posición de clase asignada.
-    if (state && state.classPosition && state.classPosition > 0) {
+    // Validamos que exista estado y que tenga una posición asignada por SessionInfo
+    if (state && typeof state.position === "number" && state.position > 0) {
       driversList.push({ info, state, carIdx });
     }
   });
 
-  // Ordenar estricta y únicamente por CarIdxClassPosition como requeriste
-  driversList.sort((a, b) => a.state.classPosition - b.state.classPosition);
+  // Ordenar estricta y únicamente por Position oficial de SessionInfo
+  driversList.sort((a, b) => a.state.position - b.state.position);
 
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
