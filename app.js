@@ -248,8 +248,8 @@ function renderTable() {
   const driversList = [];
   driverData.forEach((info, carIdx) => {
     const state = telemetryData.get(carIdx);
-    // Validamos que exista estado
-    if (state) {
+    // Validamos que exista estado y que tenga una posición oficial válida (> 0)
+    if (state && (state.classPosition > 0 || state.position > 0)) {
       driversList.push({ info, state, carIdx });
     }
   });
