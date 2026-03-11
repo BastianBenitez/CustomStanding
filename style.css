@@ -140,7 +140,7 @@ body {
 .standing-table tbody td.col-gap,
 .standing-table tbody td.col-int,
 .standing-table tbody td.col-last,
-.standing-table tbody td.col-delta,
+.standing-table tbody td.col-best,
 .standing-table tbody td.col-pit {
     font-family: var(--font-family-monospace);
     font-weight: 700;
@@ -156,7 +156,7 @@ body {
 .col-gap { width: 70px; text-align: left; }
 .col-int { width: 70px; text-align: left; }
 .col-last { width: 80px; text-align: left; }
-.col-delta { width: 80px; text-align: left; }
+.col-best { width: 80px; text-align: left; }
 .col-tire { width: 60px; text-align: left; }
 .col-pit { width: 80px; text-align: left; }
 

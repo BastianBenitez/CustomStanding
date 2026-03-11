@@ -329,15 +329,8 @@ function renderTable() {
     // Last Lap
     let lastLapStr = formatTime(state.lastLapRaw);
 
-    // Delta calculation relative to player
-    let deltaStr = "";
-    if (!isPlayer && playerLastLap > 0 && state.lastLapRaw > 0) {
-      const delta = state.lastLapRaw - playerLastLap;
-      const color = delta < 0 ? "#00ff00" : "#ff0000"; // Verde si es más rápido que tú
-      deltaStr = `<span style="color:${color}">${
-        delta > 0 ? "+" : ""
-      }${delta.toFixed(3)}</span>`;
-    }
+    // Best Lap
+    let bestStr = formatTime(state.bestLapRaw);
 
     // Pit Status (Stopwatch)
     let pitStr = "";
@@ -371,7 +364,7 @@ function renderTable() {
                 <td class="col-gap">${gapStr}</td>
                 <td class="col-int">${intStr}</td>
                 <td class="col-last">${lastLapStr}</td>
-                <td class="col-delta">${deltaStr}</td>
+                <td class="col-best">${bestStr}</td>
                 <td class="col-tire">${tireStr}</td>
                 <td class="col-pit pit-status">${pitStr}</td>
             </tr>
