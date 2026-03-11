@@ -6,6 +6,9 @@ const telemetryData = new Map();
 let playerCarIdx = -1;
 const pitTimers = new Map();
 
+// Rastro global de vueltas combinadas oficiales para no actualizar innesesariamente
+let totalLapsCache = -1;
+
 document.addEventListener("DOMContentLoaded", () => {
   initIRacing();
 });
@@ -19,23 +22,19 @@ function initIRacing() {
   // --- CONFIGURACIÓN DE VARIABLES ---
   const varsDinamicas = [
     "SessionNum", // Para saber en qué sesión estamos cambiando
-    "CarIdxPosition",
-    "CarIdxClassPosition",
     "CarIdxF2Time",
     "CarIdxEstTime",
-    "CarIdxLastLapTime",
-    "CarIdxBestLapTime",
     "CarIdxTireCompound",
     "CarIdxOnPitRoad",
     "PlayerCarInPitStall",
     "PlayerTireCompound",
   ];
 
-  const varsEstaticas = ["DriverInfo", "SessionInfo", "QualifyResultsInfo"];
+  const varsEstaticas = ["DriverInfo", "SessionInfo"];
 
   // IMPORTANTE: Pasamos los parámetros DIRECTO al constructor
   // new IRacing(dinamicas, estaticas, fps)
-  const iracing = new IRacing(varsDinamicas, varsEstaticas, 10); // 10 FPS para fluidez
+  const iracing = new IRacing(varsDinamicas, varsEstaticas, 10); // 10 FPS para fluidez en pits y gaps
 
   iracing.onConnect = () => console.log("✅ Conectado a Kapps");
 
@@ -47,8 +46,14 @@ function initIRacing() {
 }
 
 function processUpdate(data) {
+  let tableNeedsUpdate = false;
+
   if (data.SessionNum !== undefined) {
-    window.currentSessionNum = data.SessionNum;
+    if (window.currentSessionNum !== data.SessionNum) {
+      window.currentSessionNum = data.SessionNum;
+      totalLapsCache = -1; // Resetear caché al cambiar de sesión
+      tableNeedsUpdate = true;
+    }
   }
 
   // 1. PROCESAR DATOS ESTÁTICOS Y RESULTADOS (Nombres, Tipo de Sesión, Tiempos Oficiales)
@@ -68,8 +73,15 @@ function processUpdate(data) {
 
         // Extraer datos oficiales del Standing (Resultados de la sesión)
         if (currentSession.ResultsPositions) {
+          
+          let sumOfLaps = 0;
+
           currentSession.ResultsPositions.forEach((res) => {
             const carIdx = res.CarIdx;
+            
+            // Sumar vueltas completadas oficiales por toda la grilla.
+            // Si la suma global asciende, alguien cruzó la meta.
+            sumOfLaps += res.LapsComplete || 0;
             
             // Si el piloto no existe en telemetría lo inicializamos
             if (carIdx >= 0 && !telemetryData.has(carIdx)) {
@@ -82,15 +94,21 @@ function processUpdate(data) {
                 lastLapHistory: [],
                 onPitRoad: false,
                 bestLapRaw: -1,
+                lapsCompleted: 0
               });
+              tableNeedsUpdate = true;
             }
             
             if (carIdx >= 0) {
               const state = telemetryData.get(carIdx);
               
+              const didCrossFinishLine = res.LapsComplete > state.lapsCompleted;
+
               // Actualizamos posiciones oficiales desde SessionInfo
               state.position = res.Position;
               state.classPosition = res.ClassPosition;
+              
+              if (res.LapsComplete) state.lapsCompleted = res.LapsComplete;
 
               // Extraer la Mejor Vuelta Oficial
               const bestTime = res.FastestTime > 0 ? res.FastestTime : res.Time;
@@ -109,6 +127,13 @@ function processUpdate(data) {
               }
             }
           });
+
+          // Solo detonamos actualización real del DOM si hubieron nuevas vueltas procesadas. 
+          // O si es la primera vez (totalLapsCache == -1)
+          if (sumOfLaps > totalLapsCache || totalLapsCache === -1) {
+            totalLapsCache = sumOfLaps;
+            tableNeedsUpdate = true;
+          }
         }
       }
     }
@@ -120,6 +145,7 @@ function processUpdate(data) {
       console.log("=== DriverInfo  ===", data.DriverInfo);
 
       window.hasLoggedFullDriverInfo = true;
+      tableNeedsUpdate = true;
     }
 
     playerCarIdx = data.DriverInfo.DriverCarIdx;
@@ -150,7 +176,9 @@ function processUpdate(data) {
           lastLapHistory: [],
           onPitRoad: false,
           bestLapRaw: -1,
+          lapsCompleted: 0
         });
+        tableNeedsUpdate = true;
       }
     });
   }
@@ -171,21 +199,31 @@ function processUpdate(data) {
           const state = telemetryData.get(i);
           const field = mapping[key];
 
-          // Lógica de cronómetro de Pits
+          // Lógica de cronómetro de Pits (esta info si queremos actualizarla fluido)
           if (field === "onPitRoad") {
             if (val && !state.onPitRoad) {
               pitTimers.set(i, { startTime: Date.now() });
-            } else if (!val) {
+              tableNeedsUpdate = true;
+            } else if (!val && state.onPitRoad) {
               pitTimers.delete(i);
+              tableNeedsUpdate = true;
             }
             state[field] = val;
           } else if (field === "tire") {
+            let nTire = "-";
             if (val && val !== -1) {
-              state.tire = typeof val === "object" ? val.compound : val;
-            } else {
-              state.tire = "-";
+              nTire = typeof val === "object" ? val.compound : val;
+            }
+            if (state.tire !== nTire) {
+               state.tire = nTire;
+               tableNeedsUpdate = true;
             }
           } else {
+             // Si quieres ver distancias o GAPS (CarIdxF2Time) moviendose SUAVEMENTE (flujo de 10fps),
+             // Descomenta la siguiente línea para forzar actualización constante solo de lapsos.
+             
+             // tableNeedsUpdate = true; 
+             
             state[field] = val;
           }
         }
@@ -193,7 +231,16 @@ function processUpdate(data) {
     }
   }
 
-  renderTable();
+  // El cronómetro de PitLane es algo que SÍ necesita refrescarse constantemente
+  if (pitTimers.size > 0) {
+      tableNeedsUpdate = true; 
+  }
+
+  // Solo redibujar la tabla si hubieron cambios en las posiciones (cruce de meta), un auto entró/salió de pits,
+  // cambio neumático, cambio sesión o ingresó un jugador nuevo.
+  if (tableNeedsUpdate) {
+    renderTable();
+  }
 }
 
 function renderTable() {
