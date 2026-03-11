@@ -404,10 +404,9 @@ function renderTable() {
                   info.CarNumber
                 }</span></td>
                 <td class="col-logo">${info.CarShortName}</td>
-                <td class="col-flag">${flagHtml}</td>
                 <td class="col-name"><span class="license-badge license-${licClass}">${getLicenseStr(
       info.LicString
-    )}</span> ${info.UserName}</td>
+    )}</span> ${flagHtml} ${info.UserName}</td>
                 <td class="col-ir">${info.IRating || 0}</td>
                 <td class="col-gap">${gapStr}</td>
                 <td class="col-int">${intStr}</td>

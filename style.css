@@ -150,7 +150,6 @@ body {
 .col-pos { width: 40px; text-align: center; } /* Solo POS centrado */
 .col-car { width: 50px; text-align: left; }
 .col-logo { width: 60px; text-align: left; }
-.col-flag { width: 60px; text-align: left; }
 .col-pilot { width: 220px; overflow: hidden; text-overflow: ellipsis; max-width: 220px; text-align: left; }
 .col-ir { width: 60px; text-align: left; }
 .col-gap { width: 70px; text-align: left; }
@@ -191,6 +190,7 @@ body {
     border-radius: 2px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.5);
     line-height: 1em; /* keeps flags from breaking row heights */
+    margin-right: 6px;
 }
 
 /* License Badges */
