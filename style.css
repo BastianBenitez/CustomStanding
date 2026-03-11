@@ -1,136 +1,142 @@
 :root {
-    --bg-color: rgba(20, 20, 20, 0.85);
-    --header-bg: rgba(40, 40, 40, 0.95);
-    --text-main: #ffffff;
-    --text-muted: #b0b0b0;
-    --border-color: rgba(255, 255, 255, 0.1);
-    
-    /* Typography */
-    --font-family-sans-serif: 'Roboto', 'Segoe UI', sans-serif;
-    --font-family-monospace: 'Roboto Mono', monospace;
-    --app-font-size: 14px;
-    
-    /* License Colors based on typical iRacing colors */
-    --lic-r: #ff2020;
-    --lic-d: #ff9000;
-    --lic-c: #ffff00;
-    --lic-b: #00ff00;
-    --lic-a: #0080ff;
-    --lic-p: #000000;
-    
-    --theme-prec-up: #00ff00;
-    --theme-prec-down: #ff3333;
+  --bg-color: rgba(20, 20, 20, 0.85);
+  --header-bg: rgba(40, 40, 40, 0.95);
+  --text-main: #ffffff;
+  --text-muted: #b0b0b0;
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  /* Typography */
+  --font-family-sans-serif: "Roboto", "Segoe UI", sans-serif;
+  --font-family-monospace: "Roboto Mono", monospace;
+  --app-font-size: 1.5vw; /* Escala dinámica al ancho de la ventana/OBS */
+
+  /* License Colors based on typical iRacing colors */
+  --lic-r: #ff2020;
+  --lic-d: #ff9000;
+  --lic-c: #ffff00;
+  --lic-b: #00ff00;
+  --lic-a: #0080ff;
+  --lic-p: #000000;
+
+  --theme-prec-up: #00ff00;
+  --theme-prec-down: #ff3333;
 }
 
 /* Fonts from /assets/fonts */
 @font-face {
-    font-family: 'Roboto';
-    font-weight: 400;
-    font-style: normal;
-    src: url('assets/fonts/roboto-v20-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff2') format('woff2');
+  font-family: "Roboto";
+  font-weight: 400;
+  font-style: normal;
+  src: url("assets/fonts/roboto-v20-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-regular.woff2")
+    format("woff2");
 }
 
 @font-face {
-    font-family: 'Roboto';
-    font-weight: 700;
-    font-style: normal;
-    src: url('assets/fonts/roboto-v20-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700.woff2') format('woff2');
+  font-family: "Roboto";
+  font-weight: 700;
+  font-style: normal;
+  src: url("assets/fonts/roboto-v20-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700.woff2")
+    format("woff2");
 }
 
 @font-face {
-    font-family: 'Roboto Mono';
-    font-weight: 700;
-    font-style: normal;
-    src: url('assets/fonts/roboto-mono-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700.woff2') format('woff2');
+  font-family: "Roboto Mono";
+  font-weight: 700;
+  font-style: normal;
+  src: url("assets/fonts/roboto-mono-v7-vietnamese_latin-ext_latin_greek-ext_greek_cyrillic-ext_cyrillic-700.woff2")
+    format("woff2");
 }
 
 @font-face {
-    font-family: 'weather-icons';
-    src: url('assets/fonts/weather-icons.woff') format('woff');
+  font-family: "weather-icons";
+  src: url("assets/fonts/weather-icons.woff") format("woff");
 }
 
 /* Weather icons utilities based on the provided snippet (just in case) */
 [class*=" weather-icon-"],
-[class^=weather-icon-] {
-    font-family: 'weather-icons' !important;
-    font-size: var(--app-font-size);
-    font-style: normal;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+[class^="weather-icon-"] {
+  font-family: "weather-icons" !important;
+  font-size: var(--app-font-size);
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-html, body {
-    height: 100%;
+html,
+body {
+  height: 100%;
 }
 
 html {
-    outline: 0;
+  outline: 0;
 }
 
 body {
-    -webkit-user-select: none;
-    user-select: none;
-    margin: 0;
-    padding: 0;
-    font-family: var(--font-family-sans-serif);
-    color: var(--text-main);
-    background: transparent;
-    overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-sans-serif);
+  color: var(--text-main);
+  background: transparent;
+  overflow: hidden;
 }
 
 .overlay-container {
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--app-font-size);
+  padding: 0.7em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--app-font-size);
+  width: 100vw;
+  box-sizing: border-box;
 }
 
 .standing-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: var(--bg-color);
-    border-radius: 8px; /* Based on typical app rounding */
-    overflow: hidden;
-    font-size: var(--app-font-size);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--bg-color);
+  border-radius: 0.6em; /* Based on typical app rounding */
+  overflow: hidden;
+  font-size: var(--app-font-size);
+  box-shadow: 0 0.3em 0.7em rgba(0, 0, 0, 0.5);
 }
 
 .standing-table th {
-    background-color: var(--header-bg);
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 0.85em; /* Smaller header from snippet aesthetics */
-    text-transform: uppercase;
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 2px solid var(--border-color);
-    white-space: nowrap;
-    cursor: default;
-    transition: 0.1s color linear;
+  background-color: var(--header-bg);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.85em; /* Smaller header from snippet aesthetics */
+  text-transform: uppercase;
+  padding: 0.6em 0.7em;
+  text-align: left;
+  border-bottom: 0.15em solid var(--border-color);
+  white-space: nowrap;
+  cursor: default;
+  transition: 0.1s color linear;
 }
 
 .standing-table td {
-    padding: 6px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    white-space: nowrap;
-    cursor: default;
-    transition: 0.1s color linear;
+  padding: 0.45em 0.7em;
+  border-bottom: 0.07em solid rgba(255, 255, 255, 0.05); /* Aproximado a 1px */
+  white-space: nowrap;
+  cursor: default;
+  transition: 0.1s color linear;
 }
 
 .standing-table tbody tr {
-    transition: background-color 0.2s;
-    background: rgba(0,0,0,0.8);
+  transition: background-color 0.2s;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .standing-table tbody tr:nth-child(even) {
-    background: rgba(0,0,0,0.85);
+  background: rgba(0, 0, 0, 0.85);
 }
 
 .standing-table tbody tr.is-player {
-    background: rgba(60,60,60,0.85);
-    font-weight: bold;
+  background: rgba(60, 60, 60, 0.85);
+  font-weight: bold;
 }
 
 /* The values should be Monospace just like in the user's cell > value snippet */
@@ -142,96 +148,157 @@ body {
 .standing-table tbody td.col-last,
 .standing-table tbody td.col-best,
 .standing-table tbody td.col-pit {
-    font-family: var(--font-family-monospace);
-    font-weight: 700;
+  font-family: var(--font-family-monospace);
+  font-weight: 700;
 }
 
 /* Specific Columns alignment */
-.col-pos { width: 40px; text-align: center; } /* Solo POS centrado */
-.col-car { width: 50px; text-align: left; }
-.col-logo { width: 60px; text-align: left; }
-.col-pilot { width: 220px; overflow: hidden; text-overflow: ellipsis; max-width: 220px; text-align: left; }
-.col-ir { width: 60px; text-align: left; }
-.col-gap { width: 70px; text-align: left; }
-.col-int { width: 70px; text-align: left; }
-.col-last { width: 80px; text-align: left; }
-.col-best { width: 80px; text-align: left; }
-.col-tire { width: 60px; text-align: left; }
-.col-pit { width: 80px; text-align: left; }
+/* Utilizando "em" todas las columnas escalarán a la par de la ventana principal */
+.col-pos {
+  width: 2.8em;
+  text-align: center;
+} /* Solo POS centrado */
+.col-car {
+  width: 3.5em;
+  text-align: left;
+}
+.col-logo {
+  width: 4.3em;
+  text-align: left;
+}
+.col-pilot {
+  width: 16em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16em;
+  text-align: left;
+}
+.col-ir {
+  width: 4.3em;
+  text-align: left;
+}
+.col-gap {
+  width: 5em;
+  text-align: left;
+}
+.col-int {
+  width: 5em;
+  text-align: left;
+}
+.col-last {
+  width: 5.7em;
+  text-align: left;
+}
+.col-best {
+  width: 5.7em;
+  text-align: left;
+}
+.col-tire {
+  width: 4.3em;
+  text-align: left;
+}
+.col-pit {
+  width: 5.7em;
+  text-align: left;
+}
 
 /* Logo style */
 .logo-img {
-    height: 18px;
-    vertical-align: middle;
+  height: 1.3em;
+  vertical-align: middle;
 }
 
 /* Car number style */
 .car-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background-color: #eee;
-    color: #000;
-    font-family: var(--font-family-monospace);
-    font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15em 0.4em;
+  border-radius: 0.3em;
+  background-color: #eee;
+  color: #000;
+  font-family: var(--font-family-monospace);
+  font-weight: 700;
 }
 
 /* Flag style */
 .flag-img {
-    height: 18px;
-    vertical-align: middle;
+  height: 1.3em;
+  vertical-align: middle;
 }
 
 /* Flag icons library styles */
 .fi {
-    width: 1.5em;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-    line-height: 1em; /* keeps flags from breaking row heights */
-    margin-right: 6px;
+  width: 1.5em;
+  border-radius: 0.15em;
+  box-shadow: 0 0.1em 0.25em rgba(0, 0, 0, 0.5);
+  line-height: 1em; /* keeps flags from breaking row heights */
+  margin-right: 0.4em;
 }
 
 /* License Badges */
 .license-badge {
-    display: inline-block;
-    text-align: center;
-    padding: 2px 6px;
-    font-size: 0.85em;
-    font-family: var(--font-family-monospace);
-    font-weight: 700;
-    color: #fff;
-    margin-right: 5px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
+  display: inline-block;
+  text-align: center;
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+  font-family: var(--font-family-monospace);
+  font-weight: 700;
+  color: #fff;
+  margin-right: 0.4em;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.2em;
 }
 
-.license-R { border-left: 4px solid var(--lic-r); }
-.license-D { border-left: 4px solid var(--lic-d); }
-.license-C { border-left: 4px solid var(--lic-c); }
-.license-B { border-left: 4px solid var(--lic-b); }
-.license-A { border-left: 4px solid var(--lic-a); }
-.license-P { border-left: 4px solid var(--lic-p); }
+.license-R {
+  border-left: 0.3em solid var(--lic-r);
+}
+.license-D {
+  border-left: 0.3em solid var(--lic-d);
+}
+.license-C {
+  border-left: 0.3em solid var(--lic-c);
+}
+.license-B {
+  border-left: 0.3em solid var(--lic-b);
+}
+.license-A {
+  border-left: 0.3em solid var(--lic-a);
+}
+.license-P {
+  border-left: 0.3em solid var(--lic-p);
+}
 
 /* Pit Stop Indicator */
 .pit-status {
-    color: var(--text-muted);
-    font-family: var(--font-family-monospace);
+  color: var(--text-muted);
+  font-family: var(--font-family-monospace);
 }
 .in-pit {
-    color: #ff3333;
-    font-weight: 700;
+  color: #ff3333;
+  font-weight: 700;
 }
 
 /* Delta indicators */
-.delta-faster { color: var(--theme-prec-up); font-size: 0.85em; margin-left: 5px; }
-.delta-slower { color: var(--theme-prec-down); font-size: 0.85em; margin-left: 5px; }
+.delta-faster {
+  color: var(--theme-prec-up);
+  font-size: 0.85em;
+  margin-left: 5px;
+}
+.delta-slower {
+  color: var(--theme-prec-down);
+  font-size: 0.85em;
+  margin-left: 5px;
+}
 
 /* Helpers from user snippet */
 .div-inline {
-    display: flex; 
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
-.prec-up { color: var(--theme-prec-up); }
-.prec-down { color: var(--theme-prec-down); }
+.prec-up {
+  color: var(--theme-prec-up);
+}
+.prec-down {
+  color: var(--theme-prec-down);
+}

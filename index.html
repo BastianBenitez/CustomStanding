@@ -1,38 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CustomStanding Overlay</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"
+    />
     <script src="libs/coffee-script.js"></script>
     <script type="text/coffeescript" src="libs/ir.coffee"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class="overlay-container">
-        <table class="standing-table">
-            <thead>
-                <tr>
-                    <th class="col-pos">POS</th>
-                    <th class="col-car">CAR</th>
-                    <th class="col-logo">LOGO</th>
-                    <th class="col-pilot">NAME</th>
-                    <th class="col-ir">IR</th>
-                    <th class="col-gap">GAP</th>
-                    <th class="col-int">INT</th>
-                    <th class="col-last">LAST</th>
-                    <th class="col-best">BEST LAP</th>
-                    <th class="col-tire">TIRE</th>
-                    <th class="col-pit">PIT</th>
-                </tr>
-            </thead>
-            <tbody id="standing-tbody">
-                <!-- Rows will be dynamically injected here -->
-            </tbody>
-        </table>
+      <table class="standing-table">
+        <thead>
+          <tr>
+            <th class="col-pos">POS</th>
+            <th class="col-car">CAR</th>
+            <th class="col-logo">MARCA</th>
+            <th class="col-pilot">NAME</th>
+            <th class="col-ir">IR</th>
+            <th class="col-gap">GAP</th>
+            <th class="col-int">INT</th>
+            <th class="col-last">LAST</th>
+            <th class="col-best">BEST LAP</th>
+            <th class="col-tire">TIRE</th>
+            <th class="col-pit">PIT</th>
+          </tr>
+        </thead>
+        <tbody id="standing-tbody">
+          <!-- Rows will be dynamically injected here -->
+        </tbody>
+      </table>
     </div>
-    
+
     <script src="app.js"></script>
-</body>
+  </body>
 </html>
