@@ -1,0 +1,138 @@
+:root {
+    --bg-color: rgba(20, 20, 20, 0.85);
+    --header-bg: rgba(40, 40, 40, 0.95);
+    --text-main: #ffffff;
+    --text-muted: #b0b0b0;
+    --border-color: #333;
+    
+    /* License Colors based on typical iRacing colors */
+    --lic-r: #ff2020;
+    --lic-d: #ff9000;
+    --lic-c: #ffff00;
+    --lic-b: #00ff00;
+    --lic-a: #0080ff;
+    --lic-p: #000000;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-main);
+    background: transparent;
+    overflow: hidden;
+}
+
+.overlay-container {
+    padding: 10px;
+}
+
+.standing-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--bg-color);
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.standing-table th {
+    background-color: var(--header-bg);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 8px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.standing-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+}
+
+.standing-table tbody tr {
+    transition: background-color 0.2s;
+    background: rgba(0,0,0,0.8);
+}
+
+.standing-table tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.85);
+}
+
+.standing-table tbody tr.is-player {
+    background: rgba(40,40,40,0.85);
+    font-weight: bold;
+}
+
+/* Specific Columns */
+.col-pos { width: 40px; text-align: center; }
+.col-car { width: 50px; text-align: center; }
+.col-logo { width: 60px; text-align: center; }
+.col-flag { width: 60px; text-align: center; }
+.col-pilot { width: 220px; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.col-ir { width: 60px; text-align: right; }
+.col-gap { width: 70px; text-align: right; }
+.col-int { width: 70px; text-align: right; }
+.col-last { width: 80px; text-align: right; }
+.col-delta { width: 80px; text-align: right; }
+.col-tire { width: 60px; text-align: center; }
+.col-pit { width: 80px; text-align: center; }
+
+/* Logo style */
+.logo-img {
+    height: 18px;
+    vertical-align: middle;
+}
+
+/* Car number style */
+.car-number {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: #eee;
+    color: #000;
+    font-weight: bold;
+}
+
+/* Flag style */
+.flag-img {
+    height: 18px;
+    vertical-align: middle;
+}
+
+/* License Badges */
+.license-badge {
+    display: inline-block;
+    text-align: center;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    margin-right: 5px;
+    background: rgba(255,255,255,0.1);
+}
+
+.license-R { border-left: 4px solid #f2f2f2; } /* Rookie - Blanco/Gris */
+.license-D { border-left: 4px solid #fc0303; } /* Clase D - Rojo */
+.license-C { border-left: 4px solid #fcf403; } /* Clase C - Amarillo */
+.license-B { border-left: 4px solid #0362fc; } /* Clase B - Azul */
+.license-A { border-left: 4px solid #03fc1c; } /* Clase A - Verde */
+.license-P { border-left: 4px solid #000000; } /* Pro - Negro */
+
+/* Pit Stop Indicator */
+.pit-status {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 13px;
+}
+.in-pit {
+    color: #ff3333;
+    font-weight: bold;
+}
+
+/* Delta indicators */
+.delta-faster { color: #00ff00; font-size: 12px; margin-left: 5px; }
+.delta-slower { color: #ff3333; font-size: 12px; margin-left: 5px; }
