@@ -147,18 +147,18 @@ body {
 }
 
 /* Specific Columns alignment */
-.col-pos { width: 40px; text-align: center; }
-.col-car { width: 50px; text-align: center; }
-.col-logo { width: 60px; text-align: center; }
-.col-flag { width: 60px; text-align: center; }
-.col-pilot { width: 220px; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
-.col-ir { width: 60px; text-align: right; }
-.col-gap { width: 70px; text-align: right; }
-.col-int { width: 70px; text-align: right; }
-.col-last { width: 80px; text-align: right; }
-.col-delta { width: 80px; text-align: right; }
-.col-tire { width: 60px; text-align: center; }
-.col-pit { width: 80px; text-align: center; }
+.col-pos { width: 40px; text-align: center; } /* Solo POS centrado */
+.col-car { width: 50px; text-align: left; }
+.col-logo { width: 60px; text-align: left; }
+.col-flag { width: 60px; text-align: left; }
+.col-pilot { width: 220px; overflow: hidden; text-overflow: ellipsis; max-width: 220px; text-align: left; }
+.col-ir { width: 60px; text-align: left; }
+.col-gap { width: 70px; text-align: left; }
+.col-int { width: 70px; text-align: left; }
+.col-last { width: 80px; text-align: left; }
+.col-delta { width: 80px; text-align: left; }
+.col-tire { width: 60px; text-align: left; }
+.col-pit { width: 80px; text-align: left; }
 
 /* Logo style */
 .logo-img {
