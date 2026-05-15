@@ -10,6 +10,7 @@ let weatherState = {
   precipitation: 0,
   weatherDeclaredWet: false,
 };
+let camCarIdx = -1;
 const irsdkVarsToLog = [
   "SessionTime",
   "SessionTick",
@@ -432,6 +433,9 @@ function processUpdate(data) {
   if (data.WeatherDeclaredWet !== undefined) {
     weatherState.weatherDeclaredWet = data.WeatherDeclaredWet;
   }
+  if (data.CamCarIdx !== undefined) {
+    camCarIdx = data.CamCarIdx;
+  }
 
   const now = Date.now();
   if (now - lastIrsdkLogTs >= IRSDK_LOG_INTERVAL_MS) {
@@ -497,8 +501,13 @@ function processUpdate(data) {
               const didCrossFinishLine = res.LapsComplete > state.lapsCompleted;
 
               // Actualizamos posiciones oficiales desde SessionInfo como respaldo
-              // Pero confiaremos más en CarIdxClassPosition dinámico.
+              // Pero confiaremos más en CarIdxClassPosition dinámico cuando exista.
               state.position = res.Position;
+              if (res.ClassPosition !== undefined && res.ClassPosition > 0) {
+                state.classPosition = res.ClassPosition;
+              } else if (res.Position > 0 && (!state.classPosition || state.classPosition === 0)) {
+                state.classPosition = res.Position;
+              }
 
               if (res.LapsComplete) state.lapsCompleted = res.LapsComplete;
 
@@ -667,6 +676,8 @@ function renderTable() {
 
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
+  const focusCarIdx = camCarIdx >= 0 ? camCarIdx : playerCarIdx;
+
   // Identificar si es carrera para el cálculo de Gaps
   const isRace = window.sessionType
     ? window.sessionType.toLowerCase().includes("race")
@@ -697,7 +708,9 @@ function renderTable() {
     window.hasLoggedSessionData = true;
   }
 
-  driversList.forEach((entry, index) => {
+  const visibleDrivers = selectVisibleDrivers(driversList, focusCarIdx);
+
+  visibleDrivers.forEach((entry, index) => {
     const { info, state, carIdx } = entry;
     const isPlayer = carIdx === playerCarIdx;
 
@@ -771,9 +784,11 @@ function renderTable() {
     const isoCode = countryToIso[info.FlairName] || "xx";
     const flagHtml = `<span class="fi fi-${isoCode.toLowerCase()}" title="${info.FlairName}"></span>`;
 
+    const posStr = state.classPosition || state.position || "-";
+
     html += `
             <tr class="${isPlayer ? "is-player" : ""}">
-                <td class="col-pos">${state.classPosition}</td>
+                <td class="col-pos">${posStr}</td>
                 <td class="col-car"><span class="car-number">${
                   info.CarNumber
                 }</span></td>
@@ -825,6 +840,26 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, "0")}.${msStr}`;
   }
   return `${s}.${msStr}`;
+}
+
+function selectVisibleDrivers(driversList, focusCarIdx) {
+  if (!driversList.length) return [];
+
+  const topCount = Math.min(3, driversList.length);
+  const visibleIndexes = new Set();
+
+  for (let i = 0; i < topCount; i++) visibleIndexes.add(i);
+
+  let focusIndex = driversList.findIndex((d) => d.carIdx === focusCarIdx);
+  if (focusIndex === -1) focusIndex = 0;
+
+  const windowStart = Math.max(0, focusIndex - 3);
+  const windowEnd = Math.min(driversList.length - 1, focusIndex + 3);
+  for (let i = windowStart; i <= windowEnd; i++) visibleIndexes.add(i);
+
+  return Array.from(visibleIndexes)
+    .sort((a, b) => a - b)
+    .map((idx) => driversList[idx]);
 }
 
 function isWetCompound(value) {
