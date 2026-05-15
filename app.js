@@ -677,6 +677,7 @@ function renderTable() {
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
   const focusCarIdx = camCarIdx >= 0 ? camCarIdx : playerCarIdx;
+  const focusLastLap = telemetryData.get(focusCarIdx)?.lastLapRaw || -1;
 
   // Identificar si es carrera para el cálculo de Gaps
   const isRace = window.sessionType
@@ -761,6 +762,16 @@ function renderTable() {
     // Last Lap
     let lastLapStr = formatTime(state.lastLapRaw);
 
+    // Gap to focus car based on last lap
+    let gapFocusStr = "-";
+    let gapFocusClass = "";
+    if (focusLastLap > 0 && state.lastLapRaw > 0) {
+      const diff = state.lastLapRaw - focusLastLap;
+      gapFocusStr = Math.abs(diff).toFixed(1);
+      if (diff < 0) gapFocusClass = "gap-focus-up";
+      else if (diff > 0) gapFocusClass = "gap-focus-down";
+    }
+
     // Best Lap
     let bestStr = formatTime(state.bestLapRaw);
 
@@ -801,7 +812,7 @@ function renderTable() {
     if (showSeparator && originalIndex === separatorIndex) {
       html += `
             <tr class="row-separator">
-                <td colspan="11"></td>
+                <td colspan="12"></td>
             </tr>
         `;
     }
@@ -825,6 +836,7 @@ function renderTable() {
                 <td class="col-best">${bestStr}</td>
                 <td class="col-tire">${tireStr}</td>
                 <td class="col-pit pit-status">${pitStr}</td>
+                <td class="col-gap-focus ${gapFocusClass}">${gapFocusStr}</td>
             </tr>
         `;
   });
