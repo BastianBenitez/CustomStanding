@@ -11,6 +11,7 @@ let weatherState = {
   weatherDeclaredWet: false,
 };
 let camCarIdx = -1;
+const IRATING_C = 1600 / Math.log(2);
 const irsdkVarsToLog = [
   "SessionTime",
   "SessionTick",
@@ -659,6 +660,48 @@ function processUpdate(data) {
   renderTable();
 }
 
+function computeIRatingDeltas(allDrivers) {
+  const N = allDrivers.length;
+  if (N < 2) return new Map();
+
+  const expNeg = [];
+  for (let i = 0; i < N; i++) {
+    expNeg.push(Math.exp(-allDrivers[i].info.IRating / IRATING_C));
+  }
+
+  const E = [];
+  for (let i = 0; i < N; i++) {
+    E[i] = [];
+    const a = expNeg[i];
+    const oneMinusA = 1 - a;
+    for (let j = 0; j < N; j++) {
+      if (i === j) {
+        E[i][j] = 0;
+        continue;
+      }
+      const b = expNeg[j];
+      const oneMinusB = 1 - b;
+      E[i][j] = (oneMinusA * b) / (oneMinusB * a + oneMinusA * b);
+    }
+  }
+
+  const result = new Map();
+  for (let i = 0; i < N; i++) {
+    let expectedScore = 0;
+    for (let j = 0; j < N; j++) {
+      if (i !== j) expectedScore += E[i][j];
+    }
+    expectedScore -= 0.5;
+
+    const pos = i + 1;
+    const fudgeFactor = ((N / 2) - pos) / 100;
+    const delta = (N - pos - expectedScore - fudgeFactor) * 200 / N;
+    result.set(allDrivers[i].carIdx, Math.round(delta));
+  }
+
+  return result;
+}
+
 function renderTable() {
   const tbody = document.getElementById("standing-tbody");
   if (!tbody) return;
@@ -691,6 +734,9 @@ function renderTable() {
     const posB = b.state.classPosition || b.state.position || b.carIdx || 999;
     return posA - posB;
   });
+
+  // Precomputar deltas de iRating
+  const iratingDeltas = computeIRatingDeltas(driversList);
 
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
@@ -844,6 +890,14 @@ function renderTable() {
 
     const iratingStr = formatIRating(info.IRating || 0);
 
+    const delta = iratingDeltas.get(carIdx) || 0;
+    let deltaHtml = "";
+    if (delta > 0) {
+      deltaHtml = `<span class="ir-delta ir-gain">▲+${delta}</span>`;
+    } else if (delta < 0) {
+      deltaHtml = `<span class="ir-delta ir-loss">▼${delta}</span>`;
+    }
+
     if (showSeparator && originalIndex === separatorIndex) {
       html += `
             <tr class="row-separator">
@@ -864,7 +918,7 @@ function renderTable() {
                 <td class="col-name"><span class="license-badge license-${licClass}">${getLicenseStr(
       info.LicString
     )}</span> ${flagHtml} ${info.UserName}</td>
-                <td class="col-ir">${iratingStr}</td>
+                <td class="col-ir"><div class="ir-main">${iratingStr}</div>${deltaHtml}</td>
                 <td class="col-gap">${gapStr}</td>
                 <td class="col-int">${intStr}</td>
                 <td class="col-last">${lastLapStr}</td>

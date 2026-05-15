@@ -192,7 +192,7 @@ body {
   text-align: left;
 }
 .col-ir {
-  width: 3em;
+  width: 3.6em;
   text-align: left;
   font-size: 0.85em;
 }
@@ -215,6 +215,22 @@ body {
 }
 
 .gap-focus-down {
+  color: var(--theme-prec-down);
+}
+
+/* iRating Delta */
+.ir-main {
+  line-height: 1.2;
+}
+.ir-delta {
+  font-size: 0.7em;
+  line-height: 1.1;
+  display: block;
+}
+.ir-gain {
+  color: var(--theme-prec-up);
+}
+.ir-loss {
   color: var(--theme-prec-down);
 }
 .col-int {
