@@ -604,6 +604,7 @@ function processUpdate(data) {
     CarIdxEstTime: "interval",
     CarIdxOnPitRoad: "onPitRoad",
     CarIdxTireCompound: "tire",
+    CarIdxClass: "classId",
   };
 
   for (let key in mapping) {
@@ -709,7 +710,7 @@ function renderTable() {
   let html = "";
 
   // Solo array de pilotos reconocidos activamente
-  const driversList = [];
+  let driversList = [];
   driverData.forEach((info, carIdx) => {
     const state = telemetryData.get(carIdx);
     // Validamos que exista estado y que tenga una posición oficial válida (> 0)
@@ -726,6 +727,16 @@ function renderTable() {
     });
   }
 
+  // Filtrar por clase (multi-clase): solo mostrar autos de la misma clase que el auto foco
+  const focusCarIdx = camCarIdx >= 0 ? camCarIdx : playerCarIdx;
+  const focusClassId = telemetryData.get(focusCarIdx)?.classId;
+  if (focusClassId !== undefined && focusClassId !== null && focusClassId > 0) {
+    const filtered = driversList.filter(
+      (d) => d.state.classId === focusClassId
+    );
+    if (filtered.length > 0) driversList = filtered;
+  }
+
   // RESTAURADO EL SORT DINÁMICO
   // Ordenar primero por ClassPosition entregada por telemetría.
   // Es la que se actualiza más rápido. Si es 0 (no calculada aún), mandamos al fondo.
@@ -740,7 +751,6 @@ function renderTable() {
 
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
-  const focusCarIdx = camCarIdx >= 0 ? camCarIdx : playerCarIdx;
   const focusLastLap = telemetryData.get(focusCarIdx)?.lastLapRaw || -1;
 
   // Identificar si es carrera para el cálculo de Gaps
