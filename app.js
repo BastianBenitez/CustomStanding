@@ -708,11 +708,16 @@ function renderTable() {
     window.hasLoggedSessionData = true;
   }
 
-  const visibleDrivers = selectVisibleDrivers(driversList, focusCarIdx);
+  const visibleSelection = selectVisibleDrivers(driversList, focusCarIdx);
+  const visibleDrivers = visibleSelection.items;
+  const showSeparator = visibleSelection.showSeparator;
+  const separatorIndex = visibleSelection.separatorIndex;
 
-  visibleDrivers.forEach((entry, index) => {
+  visibleDrivers.forEach((item, index) => {
+    const { entry, index: originalIndex } = item;
     const { info, state, carIdx } = entry;
     const isPlayer = carIdx === playerCarIdx;
+    const isFocus = carIdx === (camCarIdx >= 0 ? camCarIdx : playerCarIdx);
 
     // License Class Extraction
     const licClass = getLicenseClass(info.LicString);
@@ -723,11 +728,11 @@ function renderTable() {
 
     if (isRace) {
       // Lógica de Carrera: gap y diferencia con el auto al frente
-      gapStr = index === 0 ? "Leader" : formatTime(state.gap);
-      if (index === 0) {
+      gapStr = originalIndex === 0 ? "Leader" : formatTime(state.gap);
+      if (originalIndex === 0) {
         intStr = "-";
       } else {
-        const prevGap = driversList[index - 1].state.gap;
+        const prevGap = driversList[originalIndex - 1].state.gap;
         const deltaToFront = state.gap - prevGap;
         intStr = deltaToFront > 0 ? formatTime(deltaToFront) : "-";
       }
@@ -742,8 +747,9 @@ function renderTable() {
         }
 
         // Intervalo respecto al piloto directamente arriba en la tabla
-        if (index > 0) {
-          const prevDriverBestLap = driversList[index - 1].state.bestLapRaw;
+        if (originalIndex > 0) {
+          const prevDriverBestLap =
+            driversList[originalIndex - 1].state.bestLapRaw;
           if (prevDriverBestLap > 0) {
             const intDiff = state.bestLapRaw - prevDriverBestLap;
             intStr = `+${intDiff.toFixed(3)}`;
@@ -792,8 +798,18 @@ function renderTable() {
 
     const iratingStr = formatIRating(info.IRating || 0);
 
+    if (showSeparator && originalIndex === separatorIndex) {
+      html += `
+            <tr class="row-separator">
+                <td colspan="11"></td>
+            </tr>
+        `;
+    }
+
     html += `
-            <tr class="${isPlayer ? "is-player" : ""}">
+            <tr class="${isPlayer ? "is-player" : ""} ${
+      isFocus ? "is-focus" : ""
+    }">
                 <td class="col-pos">${posStr}</td>
                 <td class="col-car"><span class="car-number">${
                   info.CarNumber
@@ -858,7 +874,8 @@ function formatIRating(value) {
 }
 
 function selectVisibleDrivers(driversList, focusCarIdx) {
-  if (!driversList.length) return [];
+  if (!driversList.length)
+    return { items: [], showSeparator: false, separatorIndex: -1 };
 
   const topCount = Math.min(3, driversList.length);
   const visibleIndexes = new Set();
@@ -872,9 +889,14 @@ function selectVisibleDrivers(driversList, focusCarIdx) {
   const windowEnd = Math.min(driversList.length - 1, focusIndex + 3);
   for (let i = windowStart; i <= windowEnd; i++) visibleIndexes.add(i);
 
-  return Array.from(visibleIndexes)
+  const items = Array.from(visibleIndexes)
     .sort((a, b) => a - b)
-    .map((idx) => driversList[idx]);
+    .map((idx) => ({ index: idx, entry: driversList[idx] }));
+
+  const showSeparator = windowStart > 3;
+  const separatorIndex = showSeparator ? windowStart : -1;
+
+  return { items, showSeparator, separatorIndex };
 }
 
 function isWetCompound(value) {

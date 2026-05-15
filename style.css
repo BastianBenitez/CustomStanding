@@ -141,6 +141,18 @@ body {
   font-weight: bold;
 }
 
+.standing-table tbody tr.is-focus {
+  outline: 0.2em solid rgba(255, 255, 255, 0.35);
+  outline-offset: -0.2em;
+}
+
+.standing-table tbody tr.row-separator td {
+  padding: 0;
+  height: 0.5em;
+  background: rgba(0, 0, 0, 0.9);
+  border-bottom: 0.15em solid var(--border-color);
+}
+
 /* The values should be Monospace just like in the user's cell > value snippet */
 .standing-table tbody td.col-pos,
 .standing-table tbody td.col-car,
