@@ -814,13 +814,17 @@ function renderTable() {
     }
 
     // Tires handling
-    let tireStr = "-";
-    if (typeof state.tire === "string") tireStr = state.tire;
-    else if (state.tire && state.tire.compound) tireStr = state.tire.compound;
-    else if (typeof state.tire === "number") {
+    let tireStr = "DRY";
+    if (state.tire === -1 || state.tire === "-") {
+      tireStr = "-";
+    } else if (typeof state.tire === "number") {
       if (state.tire === 1) tireStr = "WET";
-      else if (state.tire === 0) tireStr = "DRY";
-      else tireStr = String(state.tire);
+    } else if (typeof state.tire === "string") {
+      const t = state.tire.toLowerCase();
+      if (t.includes("wet") || t.includes("rain") || t === "w") tireStr = "WET";
+    } else if (state.tire && state.tire.compound) {
+      const c = String(state.tire.compound).toLowerCase();
+      if (c.includes("wet") || c.includes("rain") || c === "w") tireStr = "WET";
     }
 
     // Flag handling
