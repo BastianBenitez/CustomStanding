@@ -129,15 +129,15 @@ body {
 
 .standing-table tbody tr {
   transition: background-color 0.2s;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .standing-table tbody tr:nth-child(even) {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .standing-table tbody tr.is-player {
-  background: rgba(60, 60, 60, 0.85);
+  background: rgba(60, 60, 60, 0.15);
   font-weight: bold;
 }
 
@@ -165,16 +165,17 @@ body {
 .standing-table tbody td.col-pit {
   font-family: var(--font-family-monospace);
   font-weight: 700;
+  font-size: 0.95em;
 }
 
 /* Specific Columns alignment */
 /* Utilizando "em" todas las columnas escalarán a la par de la ventana principal */
 .col-pos {
-  width: 2.2em;
+  width: 1.8em;
   text-align: center;
 } /* Solo POS centrado */
 .col-car {
-  width: 3.2em;
+  width: 2.6em;
   text-align: left;
 }
 .col-logo {
@@ -206,16 +207,16 @@ body {
   white-space: nowrap;
 }
 .col-gap-focus span {
-  font-size: 0.7em;
+  font-size: 0.85em;
   display: inline-block;
 }
 
 .gap-focus-up {
-  color: var(--theme-prec-up);
+  color: var(--theme-prec-down);
 }
 
 .gap-focus-down {
-  color: var(--theme-prec-down);
+  color: var(--theme-prec-up);
 }
 
 /* iRating Delta */
