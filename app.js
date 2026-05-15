@@ -537,6 +537,22 @@ function processUpdate(data) {
             totalLapsCache = sumOfLaps;
           }
         }
+
+        // Guardar parrilla de clasificación si es sesión NO race
+        const isRaceSess = window.sessionType
+          ? window.sessionType.toLowerCase().includes("race")
+          : false;
+        if (!isRaceSess && currentSession.ResultsPositions) {
+          if (!window.qualifyingGrid) window.qualifyingGrid = new Map();
+          currentSession.ResultsPositions.forEach((res) => {
+            if (res.CarIdx >= 0) {
+              window.qualifyingGrid.set(res.CarIdx, {
+                position: res.Position,
+                classPosition: res.ClassPosition || res.Position,
+              });
+            }
+          });
+        }
       }
     }
   }
@@ -656,6 +672,17 @@ function processUpdate(data) {
     });
   }
 
+  // Detectar inicio de carrera (primer cruce de meta)
+  if (data.CarIdxLapCompleted && window.sessionType
+    ? window.sessionType.toLowerCase().includes("race")
+    : false) {
+    const anyLapCompleted = data.CarIdxLapCompleted.some((l) => l > 0);
+    if (anyLapCompleted && !window.raceHasStarted) {
+      console.log("[RACE] Cruce de meta detectado, cambiando a posiciones en vivo");
+    }
+    if (anyLapCompleted) window.raceHasStarted = true;
+  }
+
   // Redibujado forzado incondicional a 10 Hz para reflejar de inmediato
   // cualquier fluctuación en Posición, Vueltas, o Gaps.
   renderTable();
@@ -737,12 +764,28 @@ function renderTable() {
     if (filtered.length > 0) driversList = filtered;
   }
 
+  // Identificar si es carrera para el cálculo de Gaps
+  const isRace = window.sessionType
+    ? window.sessionType.toLowerCase().includes("race")
+    : true;
+
+  // Determinar si mostrar posiciones de parrilla (carrera sin cruces aún)
+  const raceHasStarted = window.raceHasStarted || false;
+  const qualifyingGrid = window.qualifyingGrid || null;
+  const useQualifyingGrid = isRace && !raceHasStarted && qualifyingGrid && qualifyingGrid.size > 0;
+
   // RESTAURADO EL SORT DINÁMICO
   // Ordenar primero por ClassPosition entregada por telemetría.
   // Es la que se actualiza más rápido. Si es 0 (no calculada aún), mandamos al fondo.
   driversList.sort((a, b) => {
-    const posA = a.state.classPosition || a.state.position || a.carIdx || 999;
-    const posB = b.state.classPosition || b.state.position || b.carIdx || 999;
+    let posA, posB;
+    if (useQualifyingGrid) {
+      posA = qualifyingGrid.get(a.carIdx)?.classPosition || a.state.classPosition || a.state.position || a.carIdx || 999;
+      posB = qualifyingGrid.get(b.carIdx)?.classPosition || b.state.classPosition || b.state.position || b.carIdx || 999;
+    } else {
+      posA = a.state.classPosition || a.state.position || a.carIdx || 999;
+      posB = b.state.classPosition || b.state.position || b.carIdx || 999;
+    }
     return posA - posB;
   });
 
@@ -752,11 +795,6 @@ function renderTable() {
   const playerLastLap = telemetryData.get(playerCarIdx)?.lastLapRaw || 0;
 
   const focusLastLap = telemetryData.get(focusCarIdx)?.lastLapRaw || -1;
-
-  // Identificar si es carrera para el cálculo de Gaps
-  const isRace = window.sessionType
-    ? window.sessionType.toLowerCase().includes("race")
-    : true;
 
   const isWetSession =
     weatherState.weatherDeclaredWet ||
@@ -892,7 +930,9 @@ function renderTable() {
     const isoCode = countryToIso[info.FlairName] || "xx";
     const flagHtml = `<span class="fi fi-${isoCode.toLowerCase()}" title="${info.FlairName}"></span>`;
 
-    const posStr = state.classPosition || state.position || "-";
+    const posStr = useQualifyingGrid
+      ? qualifyingGrid.get(carIdx)?.classPosition || state.classPosition || state.position || "-"
+      : state.classPosition || state.position || "-";
 
     const carBrand = info.CarShortName
       ? String(info.CarShortName).trim().split(/\s+/)[0]
