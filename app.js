@@ -615,7 +615,11 @@ function processUpdate(data) {
           // Lógica de cronómetro de Pits
           if (field === "onPitRoad") {
             if (val && !state.onPitRoad) {
-              pitTimers.set(i, { startTime: Date.now() });
+              let pitLap = (state.lapsCompleted || 0) + 1;
+              if (data.CarIdxLap && data.CarIdxLap[i] > 0) {
+                pitLap = data.CarIdxLap[i];
+              }
+              pitTimers.set(i, { startTime: Date.now(), lap: pitLap });
             } else if (!val && state.onPitRoad) {
               pitTimers.delete(i);
             }
@@ -801,13 +805,14 @@ function renderTable() {
     // Best Lap
     let bestStr = formatTime(state.bestLapRaw);
 
-    // Pit Status (Stopwatch)
+    // Pit Status
     let pitStr = "";
     if (state.onPitRoad) {
       const timer = pitTimers.get(carIdx);
       if (timer) {
         const elapsedSeconds = (Date.now() - timer.startTime) / 1000;
-        pitStr = `<span class="in-pit">${formatPitTime(elapsedSeconds)}</span>`;
+        const lapStr = `L${timer.lap}`;
+        pitStr = `<span class="in-pit">${lapStr} ${formatPitTime(elapsedSeconds)}</span>`;
       } else {
         pitStr = '<span class="in-pit">PIT</span>';
       }
@@ -907,13 +912,13 @@ function formatTime(seconds) {
 }
 
 function formatPitTime(seconds) {
-  if (!seconds || seconds <= 0) return "0.0s";
+  if (!seconds || seconds <= 0) return "0.0";
   if (seconds >= 60) {
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}:${s.toString().padStart(2, "0")}`;
   }
-  return `${seconds.toFixed(1)}s`;
+  return seconds.toFixed(1);
 }
 
 function formatIRating(value) {
