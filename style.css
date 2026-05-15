@@ -165,14 +165,17 @@ body {
   text-align: left;
 }
 .col-logo {
-  width: 4.6em;
+  width: 5.2em;
   text-align: left;
-}
-.col-pilot {
-  width: 15.2em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 15.2em;
+}
+.col-pilot,
+.col-name {
+  width: 16.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16.2em;
   text-align: left;
 }
 .col-ir {

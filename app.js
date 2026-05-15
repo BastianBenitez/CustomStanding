@@ -786,13 +786,17 @@ function renderTable() {
 
     const posStr = state.classPosition || state.position || "-";
 
+    const carBrand = info.CarShortName
+      ? String(info.CarShortName).trim().split(/\s+/)[0]
+      : "car";
+
     html += `
             <tr class="${isPlayer ? "is-player" : ""}">
                 <td class="col-pos">${posStr}</td>
                 <td class="col-car"><span class="car-number">${
                   info.CarNumber
                 }</span></td>
-                <td class="col-logo">${info.CarShortName}</td>
+                <td class="col-logo">${carBrand}</td>
                 <td class="col-name"><span class="license-badge license-${licClass}">${getLicenseStr(
       info.LicString
     )}</span> ${flagHtml} ${info.UserName}</td>
