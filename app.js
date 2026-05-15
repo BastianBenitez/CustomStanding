@@ -790,6 +790,8 @@ function renderTable() {
       ? String(info.CarShortName).trim().split(/\s+/)[0]
       : "car";
 
+    const iratingStr = formatIRating(info.IRating || 0);
+
     html += `
             <tr class="${isPlayer ? "is-player" : ""}">
                 <td class="col-pos">${posStr}</td>
@@ -800,7 +802,7 @@ function renderTable() {
                 <td class="col-name"><span class="license-badge license-${licClass}">${getLicenseStr(
       info.LicString
     )}</span> ${flagHtml} ${info.UserName}</td>
-                <td class="col-ir">${info.IRating || 0}</td>
+                <td class="col-ir">${iratingStr}</td>
                 <td class="col-gap">${gapStr}</td>
                 <td class="col-int">${intStr}</td>
                 <td class="col-last">${lastLapStr}</td>
@@ -844,6 +846,15 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, "0")}.${msStr}`;
   }
   return `${s}.${msStr}`;
+}
+
+function formatIRating(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return "0";
+  if (num < 1000) return Math.round(num).toString();
+  const k = num / 1000;
+  const rounded = Math.round(k * 10) / 10;
+  return `${rounded.toFixed(rounded % 1 === 0 ? 0 : 1)}k`;
 }
 
 function selectVisibleDrivers(driversList, focusCarIdx) {
