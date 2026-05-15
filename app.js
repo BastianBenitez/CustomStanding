@@ -695,7 +695,7 @@ function computeIRatingDeltas(allDrivers) {
 
     const pos = i + 1;
     const fudgeFactor = ((N / 2) - pos) / 100;
-    const delta = (N - pos - expectedScore - fudgeFactor) * 200 / N;
+    const delta = (N - pos - expectedScore - fudgeFactor) * 200 / N - 5;
     result.set(allDrivers[i].carIdx, Math.round(delta));
   }
 
