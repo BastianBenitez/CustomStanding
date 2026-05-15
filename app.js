@@ -801,8 +801,9 @@ function renderTable() {
     weatherState.trackWetness > 0 ||
     weatherState.precipitation > 0;
 
-  // Extraer la mejor vuelta del líder para detectar vueltas perdidas
+  // Extraer vuelta de referencia de toda la sala para detectar vueltas perdidas
   let leaderBestLap = -1;
+  let sessionRefLap = -1;
   if (driversList.length > 0) {
     let bestTimes = driversList
       .map((d) => d.state.bestLapRaw)
@@ -810,6 +811,7 @@ function renderTable() {
     if (bestTimes.length > 0) {
       leaderBestLap = Math.min(...bestTimes);
     }
+    sessionRefLap = getSessionRefLap(driversList);
   }
 
   if (!window.hasLoggedSessionData) {
@@ -818,6 +820,7 @@ function renderTable() {
     console.log("SessionType:", window.sessionType);
     console.log("isRace detectado:", isRace);
     console.log("leaderBestLap detectado:", leaderBestLap);
+    console.log("sessionRefLap detectado:", sessionRefLap);
     window.hasLoggedSessionData = true;
   }
 
@@ -841,13 +844,14 @@ function renderTable() {
 
     if (isRace) {
       // Lógica de Carrera: gap y diferencia con el auto al frente
-      gapStr = originalIndex === 0 ? "Leader" : formatGapTime(state.gap, leaderBestLap);
+      const refLap = sessionRefLap > 0 ? sessionRefLap : leaderBestLap;
+      gapStr = originalIndex === 0 ? "Leader" : formatGapTime(state.gap, refLap);
       if (originalIndex === 0) {
         intStr = "-";
       } else {
         const prevGap = driversList[originalIndex - 1].state.gap;
         const deltaToFront = state.gap - prevGap;
-        intStr = deltaToFront > 0 ? formatGapTime(deltaToFront, leaderBestLap) : "-";
+        intStr = deltaToFront > 0 ? formatGapTime(deltaToFront, refLap) : "-";
       }
     } else {
       // Lógica de Práctica/Clasificación: diferencia de mejor vuelta respecto al líder
@@ -1029,6 +1033,20 @@ function formatGapTime(seconds, refLap, showPlus) {
     return `${prefix}${m}:${s.toString().padStart(2, "0")}${ds}`;
   }
   return `${prefix}${s}${ds}`;
+}
+
+function getSessionRefLap(driversList) {
+  const allLaps = [];
+  driversList.forEach((d) => {
+    const hist = d.state.lastLapHistory || [];
+    hist.forEach((l) => { if (l > 0) allLaps.push(l); });
+  });
+  if (allLaps.length < 3) return -1;
+  const sorted = [...allLaps].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  const clean = allLaps.filter((l) => Math.abs(l - median) / median <= 0.05);
+  if (clean.length < 2) return -1;
+  return clean.reduce((s, l) => s + l, 0) / clean.length;
 }
 
 function formatPitTime(seconds) {
