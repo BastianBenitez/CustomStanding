@@ -636,6 +636,20 @@ function processUpdate(data) {
     }
   }
 
+  // Track last 3 lap times from telemetry
+  if (data.CarIdxLastLapTime) {
+    data.CarIdxLastLapTime.forEach((val, i) => {
+      if (telemetryData.has(i) && val > 0) {
+        const state = telemetryData.get(i);
+        if (Math.abs(val - state.lastLapRaw) > 0.001) {
+          state.lastLapHistory.push(val);
+          if (state.lastLapHistory.length > 3) state.lastLapHistory.shift();
+          state.lastLapRaw = val;
+        }
+      }
+    });
+  }
+
   // Redibujado forzado incondicional a 10 Hz para reflejar de inmediato
   // cualquier fluctuación en Posición, Vueltas, o Gaps.
   renderTable();
@@ -762,14 +776,26 @@ function renderTable() {
     // Last Lap
     let lastLapStr = formatTime(state.lastLapRaw);
 
-    // Gap to focus car based on last lap
+    // Laps gap to focus car (3 individual lap values with color)
     let gapFocusStr = "-";
     let gapFocusClass = "";
-    if (focusLastLap > 0 && state.lastLapRaw > 0) {
-      const diff = state.lastLapRaw - focusLastLap;
-      gapFocusStr = Math.abs(diff).toFixed(1);
-      if (diff < 0) gapFocusClass = "gap-focus-up";
-      else if (diff > 0) gapFocusClass = "gap-focus-down";
+    const focusState = telemetryData.get(focusCarIdx);
+    const focusHistory = focusState?.lastLapHistory || [];
+    const driverHistory = state.lastLapHistory || [];
+    const lapsCount = Math.min(3, focusHistory.length, driverHistory.length);
+    if (lapsCount > 0) {
+      const chunks = [];
+      for (let i = 0; i < lapsCount; i++) {
+        const fTime = focusHistory[focusHistory.length - lapsCount + i];
+        const dTime = driverHistory[driverHistory.length - lapsCount + i];
+        const diff = dTime - fTime;
+        const val = Math.abs(diff).toFixed(1);
+        let cls = "";
+        if (diff < 0) cls = "gap-focus-up";
+        else if (diff > 0) cls = "gap-focus-down";
+        chunks.push(`<span class="${cls}">${val}</span>`);
+      }
+      gapFocusStr = chunks.join(' ');
     }
 
     // Best Lap
@@ -781,7 +807,7 @@ function renderTable() {
       const timer = pitTimers.get(carIdx);
       if (timer) {
         const elapsedSeconds = (Date.now() - timer.startTime) / 1000;
-        pitStr = `<span class="in-pit">${elapsedSeconds.toFixed(1)}s</span>`;
+        pitStr = `<span class="in-pit">${formatPitTime(elapsedSeconds)}</span>`;
       } else {
         pitStr = '<span class="in-pit">PIT</span>';
       }
@@ -874,6 +900,16 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, "0")}.${msStr}`;
   }
   return `${s}.${msStr}`;
+}
+
+function formatPitTime(seconds) {
+  if (!seconds || seconds <= 0) return "0.0s";
+  if (seconds >= 60) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
+  return `${seconds.toFixed(1)}s`;
 }
 
 function formatIRating(value) {

@@ -8,7 +8,7 @@
   /* Typography */
   --font-family-sans-serif: "Roboto", "Segoe UI", sans-serif;
   --font-family-monospace: "Roboto Mono", monospace;
-  --app-font-size: 1.5vw; /* Escala dinámica al ancho de la ventana/OBS */
+  --app-font-size: 1.4vw; /* Escala dinámica al ancho de la ventana/OBS */
 
   /* License Colors based on typical iRacing colors */
   --lic-r: #ff2020;
@@ -170,11 +170,11 @@ body {
 /* Specific Columns alignment */
 /* Utilizando "em" todas las columnas escalarán a la par de la ventana principal */
 .col-pos {
-  width: 3.4em;
+  width: 2.2em;
   text-align: center;
 } /* Solo POS centrado */
 .col-car {
-  width: 3.8em;
+  width: 3.2em;
   text-align: left;
 }
 .col-logo {
@@ -192,16 +192,22 @@ body {
   text-align: left;
 }
 .col-ir {
-  width: 4.1em;
+  width: 3em;
   text-align: left;
+  font-size: 0.85em;
 }
 .col-gap {
-  width: 4em;
+  width: 3.8em;
   text-align: left;
 }
 .col-gap-focus {
-  width: 3.6em;
+  width: 6.5em;
   text-align: left;
+  white-space: nowrap;
+}
+.col-gap-focus span {
+  font-size: 0.7em;
+  display: inline-block;
 }
 
 .gap-focus-up {
@@ -212,7 +218,7 @@ body {
   color: var(--theme-prec-down);
 }
 .col-int {
-  width: 4em;
+  width: 3.8em;
   text-align: left;
 }
 .col-last {
@@ -228,7 +234,7 @@ body {
   text-align: left;
 }
 .col-pit {
-  width: 4.6em;
+  width: 3.5em;
   text-align: left;
 }
 
