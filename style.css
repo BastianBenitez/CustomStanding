@@ -91,6 +91,7 @@ body {
   font-size: var(--app-font-size);
   width: 100vw;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .standing-table {
@@ -101,6 +102,7 @@ body {
   overflow: hidden;
   font-size: var(--app-font-size);
   box-shadow: 0 0.3em 0.7em rgba(0, 0, 0, 0.5);
+  table-layout: fixed;
 }
 
 .standing-table th {
@@ -155,50 +157,50 @@ body {
 /* Specific Columns alignment */
 /* Utilizando "em" todas las columnas escalarán a la par de la ventana principal */
 .col-pos {
-  width: 2.8em;
+  width: 3.1em;
   text-align: center;
 } /* Solo POS centrado */
 .col-car {
-  width: 3.5em;
+  width: 3.8em;
   text-align: left;
 }
 .col-logo {
-  width: 4.3em;
+  width: 4.6em;
   text-align: left;
 }
 .col-pilot {
-  width: 16em;
+  width: 15.2em;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 16em;
+  max-width: 15.2em;
   text-align: left;
 }
 .col-ir {
-  width: 4.3em;
+  width: 4.1em;
   text-align: left;
 }
 .col-gap {
-  width: 5em;
+  width: 4.8em;
   text-align: left;
 }
 .col-int {
-  width: 5em;
+  width: 4.8em;
   text-align: left;
 }
 .col-last {
-  width: 5.7em;
+  width: 5.4em;
   text-align: left;
 }
 .col-best {
-  width: 5.7em;
+  width: 5.4em;
   text-align: left;
 }
 .col-tire {
-  width: 4.3em;
+  width: 3.8em;
   text-align: left;
 }
 .col-pit {
-  width: 5.7em;
+  width: 5.6em;
   text-align: left;
 }
 

@@ -5,6 +5,11 @@ const driverData = new Map();
 const telemetryData = new Map();
 let playerCarIdx = -1;
 const pitTimers = new Map();
+let weatherState = {
+  trackWetness: 0,
+  precipitation: 0,
+  weatherDeclaredWet: false,
+};
 const irsdkVarsToLog = [
   "SessionTime",
   "SessionTick",
@@ -418,6 +423,16 @@ function initIRacing() {
 }
 
 function processUpdate(data) {
+  if (data.TrackWetness !== undefined) {
+    weatherState.trackWetness = data.TrackWetness;
+  }
+  if (data.Precipitation !== undefined) {
+    weatherState.precipitation = data.Precipitation;
+  }
+  if (data.WeatherDeclaredWet !== undefined) {
+    weatherState.weatherDeclaredWet = data.WeatherDeclaredWet;
+  }
+
   const now = Date.now();
   if (now - lastIrsdkLogTs >= IRSDK_LOG_INTERVAL_MS) {
     const snapshot = {};
@@ -633,12 +648,20 @@ function renderTable() {
     }
   });
 
+  // Fallback: si no hay posiciones válidas aún, mostramos todos los pilotos
+  if (driversList.length === 0) {
+    driverData.forEach((info, carIdx) => {
+      const state = telemetryData.get(carIdx);
+      if (state) driversList.push({ info, state, carIdx });
+    });
+  }
+
   // RESTAURADO EL SORT DINÁMICO
   // Ordenar primero por ClassPosition entregada por telemetría.
   // Es la que se actualiza más rápido. Si es 0 (no calculada aún), mandamos al fondo.
   driversList.sort((a, b) => {
-    const posA = a.state.classPosition || a.state.position || 999;
-    const posB = b.state.classPosition || b.state.position || 999;
+    const posA = a.state.classPosition || a.state.position || a.carIdx || 999;
+    const posB = b.state.classPosition || b.state.position || b.carIdx || 999;
     return posA - posB;
   });
 
@@ -648,6 +671,11 @@ function renderTable() {
   const isRace = window.sessionType
     ? window.sessionType.toLowerCase().includes("race")
     : true;
+
+  const isWetSession =
+    weatherState.weatherDeclaredWet ||
+    weatherState.trackWetness > 0 ||
+    weatherState.precipitation > 0;
 
   // Extraer el tiempo absoluto del líder basándonos en los datos consolidados oficiales
   let leaderBestLap = -1;
@@ -681,9 +709,15 @@ function renderTable() {
     let intStr = "-";
 
     if (isRace) {
-      // Lógica de Carrera: gap y estTime (distancia real en pista)
+      // Lógica de Carrera: gap y diferencia con el auto al frente
       gapStr = index === 0 ? "Leader" : formatTime(state.gap);
-      intStr = state.interval > 0 ? formatTime(state.interval) : "-";
+      if (index === 0) {
+        intStr = "-";
+      } else {
+        const prevGap = driversList[index - 1].state.gap;
+        const deltaToFront = state.gap - prevGap;
+        intStr = deltaToFront > 0 ? formatTime(deltaToFront) : "-";
+      }
     } else {
       // Lógica de Práctica/Clasificación: diferencia de mejor vuelta respecto al líder
       if (state.bestLapRaw > 0 && leaderBestLap > 0) {
@@ -726,7 +760,12 @@ function renderTable() {
     // Tires handling
     let tireStr = "-";
     if (typeof state.tire === "string") tireStr = state.tire;
-    else if (state.tire.compound) tireStr = state.tire.compound;
+    else if (state.tire && state.tire.compound) tireStr = state.tire.compound;
+    else if (typeof state.tire === "number") {
+      if (state.tire === 1) tireStr = "WET";
+      else if (state.tire === 0) tireStr = "DRY";
+      else tireStr = String(state.tire);
+    }
 
     // Flag handling
     const isoCode = countryToIso[info.FlairName] || "xx";
@@ -786,6 +825,20 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, "0")}.${msStr}`;
   }
   return `${s}.${msStr}`;
+}
+
+function isWetCompound(value) {
+  if (!value) return false;
+  if (typeof value === "string") {
+    const v = value.toLowerCase();
+    return v.includes("wet") || v.includes("rain") || v === "w";
+  }
+  if (value && typeof value === "object" && value.compound) {
+    const c = String(value.compound).toLowerCase();
+    return c.includes("wet") || c.includes("rain") || c === "w";
+  }
+  if (typeof value === "number") return value === 1;
+  return false;
 }
 
 function getLicenseClass(licString) {
