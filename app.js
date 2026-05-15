@@ -753,9 +753,9 @@ function renderTable() {
     weatherState.trackWetness > 0 ||
     weatherState.precipitation > 0;
 
-  // Extraer el tiempo absoluto del líder basándonos en los datos consolidados oficiales
+  // Extraer la mejor vuelta del líder para detectar vueltas perdidas
   let leaderBestLap = -1;
-  if (!isRace && driversList.length > 0) {
+  if (driversList.length > 0) {
     let bestTimes = driversList
       .map((d) => d.state.bestLapRaw)
       .filter((t) => t && t > 0);
@@ -793,13 +793,13 @@ function renderTable() {
 
     if (isRace) {
       // Lógica de Carrera: gap y diferencia con el auto al frente
-      gapStr = originalIndex === 0 ? "Leader" : formatTime(state.gap);
+      gapStr = originalIndex === 0 ? "Leader" : formatGapTime(state.gap, leaderBestLap);
       if (originalIndex === 0) {
         intStr = "-";
       } else {
         const prevGap = driversList[originalIndex - 1].state.gap;
         const deltaToFront = state.gap - prevGap;
-        intStr = deltaToFront > 0 ? formatTime(deltaToFront) : "-";
+        intStr = deltaToFront > 0 ? formatGapTime(deltaToFront, leaderBestLap) : "-";
       }
     } else {
       // Lógica de Práctica/Clasificación: diferencia de mejor vuelta respecto al líder
@@ -808,7 +808,7 @@ function renderTable() {
           gapStr = "Top";
         } else {
           const diff = state.bestLapRaw - leaderBestLap;
-          gapStr = `+${diff.toFixed(3)}`;
+          gapStr = formatGapTime(diff, leaderBestLap, true);
         }
 
         // Intervalo respecto al piloto directamente arriba en la tabla
@@ -817,7 +817,7 @@ function renderTable() {
             driversList[originalIndex - 1].state.bestLapRaw;
           if (prevDriverBestLap > 0) {
             const intDiff = state.bestLapRaw - prevDriverBestLap;
-            intStr = `+${intDiff.toFixed(3)}`;
+            intStr = intDiff > 0 ? formatGapTime(intDiff, leaderBestLap, true) : "-";
           }
         }
       }
@@ -963,6 +963,22 @@ function formatTime(seconds) {
     return `${m}:${s.toString().padStart(2, "0")}.${msStr}`;
   }
   return `${s}.${msStr}`;
+}
+
+function formatGapTime(seconds, refLap, showPlus) {
+  if (!seconds || seconds <= 0) return "-";
+  const prefix = showPlus ? "+" : "";
+  if (refLap > 0 && seconds >= refLap) {
+    const laps = Math.floor(seconds / refLap);
+    return `${prefix}${laps}L`;
+  }
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  const ds = (seconds % 1).toFixed(1).substring(1);
+  if (m > 0) {
+    return `${prefix}${m}:${s.toString().padStart(2, "0")}${ds}`;
+  }
+  return `${prefix}${s}${ds}`;
 }
 
 function formatPitTime(seconds) {
