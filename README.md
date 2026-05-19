@@ -36,16 +36,6 @@ Si la carrera no ha comenzado, muestra la parrilla de clasificación.
 
 Ahora pueden abrir el overlay y ajustar el nuevo cuadro en la escena.
 
-## Parámetros
-
-Se pueden agregar parámetros en la URL para modificar el comportamiento. Agregar al final de la URL "?" seguido del parámetro y su valor. Múltiples parámetros se separan con "&".
-
-Parámetros:
-
-`bgOpacity=0.5` - opacidad del fondo de la tabla, de 0.0 a 1 (predeterminado: 0.85)
-
-Ejemplo: `http://127.0.0.1:8182/CustomStanding/?bgOpacity=0.5`
-
 ---
 
 # Description
@@ -83,16 +73,6 @@ If the race hasn't started yet, it shows the qualifying grid.
   - URL must be 'http://127.0.0.1:8182/CustomStanding/'
 
 Now you can open the overlay and configure the new box in your scene.
-
-## Options
-
-You can add URL parameters to modify behavior. Append "?" to the URL followed by the parameter and value. Multiple parameters are separated with "&".
-
-Parameters:
-
-`bgOpacity=0.5` - table background opacity, from 0.0 to 1 (default: 0.85)
-
-Example: `http://127.0.0.1:8182/CustomStanding/?bgOpacity=0.5`
 
 ---
 
